@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
@@ -8,14 +9,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
-public class AttendanceSheet {
+@SuppressWarnings({"serial", "rawtypes", "unchecked"})
+public class AttendanceTrackerFRANCIA {
 
     public static void main(String[] args) {
-        // Run GUI on Event Dispatch Thread
-        SwingUtilities.invokeLater(() -> new AttendanceSheet().createAndShowGUI());
+        SwingUtilities.invokeLater(() -> new AttendanceTrackerFRANCIA().start());
     }
 
-    private void createAndShowGUI() {
+    // instance variables
+    private JTextField nameField, courseField, timeInField, timeOutField, signatureIdField;
+    private SignaturePanel signaturePanel;
+    private DefaultTableModel model;
+
+    private void start() {
         JFrame frame = new JFrame("Attendance Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 450);
@@ -30,11 +36,11 @@ public class AttendanceSheet {
         inputPanel.setBorder(BorderFactory.createTitledBorder("Attendance Input"));
         inputPanel.setBackground(bgColor);
 
-        JTextField nameField = new JTextField();
-        JTextField courseField = new JTextField();
-        JTextField timeInField = new JTextField();
-        JTextField timeOutField = new JTextField();
-        JTextField signatureIdField = new JTextField();
+        nameField = new JTextField();
+        courseField = new JTextField();
+        timeInField = new JTextField();
+        timeOutField = new JTextField();
+        signatureIdField = new JTextField();
 
         timeInField.setEditable(false);
         timeOutField.setEditable(false);
@@ -42,36 +48,35 @@ public class AttendanceSheet {
 
         inputPanel.add(new JLabel("Attendance Name:"));
         inputPanel.add(nameField);
-
         inputPanel.add(new JLabel("Course / Year:"));
         inputPanel.add(courseField);
-
         inputPanel.add(new JLabel("Time In:"));
         inputPanel.add(timeInField);
-
         inputPanel.add(new JLabel("Time Out:"));
         inputPanel.add(timeOutField);
-
         inputPanel.add(new JLabel("E-Signature ID:"));
         inputPanel.add(signatureIdField);
 
         JButton addBtn = new JButton("Add Attendance");
         addBtn.setBackground(headerColor);
         addBtn.setForeground(Color.WHITE);
-
         inputPanel.add(new JLabel(""));
         inputPanel.add(addBtn);
 
         // SIGNATURE PANEL
-        SignaturePanel signaturePanel = new SignaturePanel();
+        signaturePanel = new SignaturePanel();
         signaturePanel.setBorder(BorderFactory.createTitledBorder("Draw Your Signature"));
 
         // TABLE
         String[] columns = {"Name", "Course/Year", "Time In", "Time Out", "Signature"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         JTable table = new JTable(model);
         table.setRowHeight(25);
-
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Attendance List"));
 
@@ -80,59 +85,20 @@ public class AttendanceSheet {
 
         // AUTO TIME IN
         DocumentListener timeInListener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { setTimeIn(); }
-            public void removeUpdate(DocumentEvent e) {}
-            public void changedUpdate(DocumentEvent e) {}
+            public void insertUpdate(DocumentEvent e) {
+                setTimeIn(timeFormat);
+            }
 
-            private void setTimeIn() {
-                if (!nameField.getText().isEmpty()
-                        && !courseField.getText().isEmpty()
-                        && timeInField.getText().isEmpty()) {
+            public void removeUpdate(DocumentEvent e) {
+            }
 
-                    timeInField.setText(LocalDateTime.now().format(timeFormat));
-                    signatureIdField.setText(generateLetterSignature());
-                }
+            public void changedUpdate(DocumentEvent e) {
             }
         };
-
         nameField.getDocument().addDocumentListener(timeInListener);
         courseField.getDocument().addDocumentListener(timeInListener);
 
-        // ADD BUTTON
-        addBtn.addActionListener(e -> {
-
-            if (nameField.getText().isEmpty()
-                    || courseField.getText().isEmpty()
-                    || timeInField.getText().isEmpty()) {
-
-                JOptionPane.showMessageDialog(frame,
-                        "Complete all required fields!");
-                return;
-            }
-
-            // Time Out must be DIFFERENT
-            timeOutField.setText(LocalDateTime.now().format(timeFormat));
-
-            // Check if signature exists
-            String signatureStatus =
-                    signaturePanel.hasSignature() ? "SIGNED" : "NO SIGNATURE";
-
-            model.addRow(new Object[]{
-                    nameField.getText(),
-                    courseField.getText(),
-                    timeInField.getText(),
-                    timeOutField.getText(),
-                    signatureStatus
-            });
-
-            // Clear after adding
-            nameField.setText("");
-            courseField.setText("");
-            timeInField.setText("");
-            timeOutField.setText("");
-            signatureIdField.setText("");
-            signaturePanel.clear();
-        });
+        addBtn.addActionListener(e -> addAttendance(timeFormat));
 
         // LAYOUT
         JPanel leftPanel = new JPanel(new BorderLayout());
@@ -146,8 +112,39 @@ public class AttendanceSheet {
         frame.setVisible(true);
     }
 
-    // LETTER-ONLY SIGNATURE
-    private static String generateLetterSignature() {
+    private void setTimeIn(DateTimeFormatter timeFormat) {
+        if (!nameField.getText().isEmpty() && !courseField.getText().isEmpty() && timeInField.getText().isEmpty()) {
+            timeInField.setText(LocalDateTime.now().format(timeFormat));
+            signatureIdField.setText(generateLetterSignature());
+        }
+    }
+
+    private void addAttendance(DateTimeFormatter timeFormat) {
+        if (nameField.getText().isEmpty() || courseField.getText().isEmpty() || timeInField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Complete all required fields!");
+            return;
+        }
+
+        timeOutField.setText(LocalDateTime.now().format(timeFormat));
+        String signatureStatus = signaturePanel.hasSignature() ? "SIGNED" : "NO SIGNATURE";
+
+        model.addRow(new Object[]{
+            nameField.getText(),
+            courseField.getText(),
+            timeInField.getText(),
+            timeOutField.getText(),
+            signatureStatus
+        });
+
+        nameField.setText("");
+        courseField.setText("");
+        timeInField.setText("");
+        timeOutField.setText("");
+        signatureIdField.setText("");
+        signaturePanel.clear();
+    }
+
+    private String generateLetterSignature() {
         String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         Random rand = new Random();
         StringBuilder sb = new StringBuilder("SIG-");
@@ -159,6 +156,7 @@ public class AttendanceSheet {
 }
 
 // SIGNATURE PANEL
+@SuppressWarnings("serial")
 class SignaturePanel extends JPanel {
 
     private Image image;
@@ -192,7 +190,6 @@ class SignaturePanel extends JPanel {
 
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         if (image == null) {
             image = createImage(getWidth(), getHeight());
             if (image != null) {
@@ -201,7 +198,6 @@ class SignaturePanel extends JPanel {
                 g2.setColor(Color.BLACK);
             }
         }
-
         if (image != null) {
             g.drawImage(image, 0, 0, null);
         }
