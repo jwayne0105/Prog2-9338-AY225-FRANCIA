@@ -11,17 +11,21 @@ import javax.swing.table.DefaultTableModel;
 public class AttendanceSheet {
 
     public static void main(String[] args) {
+        // Run GUI on Event Dispatch Thread
+        SwingUtilities.invokeLater(() -> new AttendanceSheet().createAndShowGUI());
+    }
 
+    private void createAndShowGUI() {
         JFrame frame = new JFrame("Attendance Tracker");
-        frame.setSize(1200, 450);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(1200, 450);
         frame.setLayout(new BorderLayout());
 
-        // ================= COLORS =================
+        // COLORS
         Color bgColor = new Color(245, 245, 245);
         Color headerColor = new Color(40, 120, 200);
 
-        // ================= INPUT PANEL =================
+        // INPUT PANEL
         JPanel inputPanel = new JPanel(new GridLayout(6, 2, 10, 10));
         inputPanel.setBorder(BorderFactory.createTitledBorder("Attendance Input"));
         inputPanel.setBackground(bgColor);
@@ -58,11 +62,11 @@ public class AttendanceSheet {
         inputPanel.add(new JLabel(""));
         inputPanel.add(addBtn);
 
-        // ================= SIGNATURE PANEL =================
+        // SIGNATURE PANEL
         SignaturePanel signaturePanel = new SignaturePanel();
         signaturePanel.setBorder(BorderFactory.createTitledBorder("Draw Your Signature"));
 
-        // ================= TABLE =================
+        // TABLE
         String[] columns = {"Name", "Course/Year", "Time In", "Time Out", "Signature"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         JTable table = new JTable(model);
@@ -71,11 +75,10 @@ public class AttendanceSheet {
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Attendance List"));
 
-        // ================= TIME FORMAT =================
-        DateTimeFormatter timeFormat =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
+        // TIME FORMAT
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
 
-        // ================= AUTO TIME IN =================
+        // AUTO TIME IN
         DocumentListener timeInListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { setTimeIn(); }
             public void removeUpdate(DocumentEvent e) {}
@@ -95,7 +98,7 @@ public class AttendanceSheet {
         nameField.getDocument().addDocumentListener(timeInListener);
         courseField.getDocument().addDocumentListener(timeInListener);
 
-        // ================= ADD BUTTON =================
+        // ADD BUTTON
         addBtn.addActionListener(e -> {
 
             if (nameField.getText().isEmpty()
@@ -131,7 +134,7 @@ public class AttendanceSheet {
             signaturePanel.clear();
         });
 
-        // ================= LAYOUT =================
+        // LAYOUT
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.add(inputPanel, BorderLayout.NORTH);
         leftPanel.add(signaturePanel, BorderLayout.CENTER);
@@ -143,12 +146,11 @@ public class AttendanceSheet {
         frame.setVisible(true);
     }
 
-    // ================= LETTER-ONLY SIGNATURE =================
+    // LETTER-ONLY SIGNATURE
     private static String generateLetterSignature() {
         String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         Random rand = new Random();
         StringBuilder sb = new StringBuilder("SIG-");
-
         for (int i = 0; i < 6; i++) {
             sb.append(letters.charAt(rand.nextInt(letters.length())));
         }
@@ -156,9 +158,7 @@ public class AttendanceSheet {
     }
 }
 
-// =================================================
 // SIGNATURE PANEL
-// =================================================
 class SignaturePanel extends JPanel {
 
     private Image image;
@@ -195,12 +195,16 @@ class SignaturePanel extends JPanel {
 
         if (image == null) {
             image = createImage(getWidth(), getHeight());
-            g2 = (Graphics2D) image.getGraphics();
-            g2.setStroke(new BasicStroke(2));
-            g2.setColor(Color.BLACK);
+            if (image != null) {
+                g2 = (Graphics2D) image.getGraphics();
+                g2.setStroke(new BasicStroke(2));
+                g2.setColor(Color.BLACK);
+            }
         }
 
-        g.drawImage(image, 0, 0, null);
+        if (image != null) {
+            g.drawImage(image, 0, 0, null);
+        }
     }
 
     public boolean hasSignature() {
