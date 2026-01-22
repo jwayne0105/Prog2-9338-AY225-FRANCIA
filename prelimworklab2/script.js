@@ -1,78 +1,111 @@
-// Beep sound
 const beep = new Audio("beep.mp3");
 
-// Valid users
-const users = {
-    wayne: "1234",
-    justine: "abcd",
-    nigger: "123"
+let users = JSON.parse(localStorage.getItem("users")) || {
+    wayne:"1234",
+    justine:"abcd"
 };
 
-// Load attendance from localStorage (kung meron na)
-let attendanceList = JSON.parse(localStorage.getItem("attendance")) || [];
+let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
 
-document.getElementById("loginForm").addEventListener("submit", function (e) {
+const loginBox = document.getElementById("loginBox");
+const attendanceBox = document.getElementById("attendanceBox");
+const attendanceList = document.getElementById("attendanceList");
+const message = document.getElementById("message");
+const passwordInput = document.getElementById("password");
+const formTitle = document.getElementById("formTitle");
+const submitBtn = document.getElementById("submitBtn");
+const switchBtn = document.getElementById("switchBtn");
+
+let registerMode = false;
+
+/* SHOW PASSWORD */
+document.getElementById("togglePassword").onclick = () =>{
+    passwordInput.type =
+    passwordInput.type === "password" ? "text" : "password";
+};
+
+/* LOGIN / REGISTER */
+document.getElementById("loginForm").onsubmit = e =>{
     e.preventDefault();
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const u = username.value.trim();
+    const p = passwordInput.value.trim();
 
-    const message = document.getElementById("message");
-    const timestampDiv = document.getElementById("timestamp");
+    if(registerMode){
+        if(users[u]){
+            message.style.color="red";
+            message.textContent="Username already exists";
+            return;
+        }
+        users[u]=p;
+        localStorage.setItem("users",JSON.stringify(users));
+        message.style.color="green";
+        message.textContent="Registered successfully!";
+        toggleMode(false);
+        return;
+    }
 
-    if (users[username] && users[username] === password) {
-        const now = new Date();
-        const timestamp = formatDate(now);
+    if(users[u] && users[u]===p){
+        const time = new Date().toLocaleString();
+        attendance.push({u,time});
+        localStorage.setItem("attendance",JSON.stringify(attendance));
 
-        message.style.color = "green";
-        message.textContent = "Login successful! Welcome, " + username;
-        timestampDiv.textContent = "Login Time: " + timestamp;
+        loginBox.style.display="none";
+        attendanceBox.style.display="block";
+        document.body.classList.replace("login-bg","attendance-bg");
 
-        // Add to attendance list
-        attendanceList.push({
-            user: username,
-            time: timestamp
-        });
-
-        // Save to localStorage
-        localStorage.setItem("attendance", JSON.stringify(attendanceList));
-
-        // Generate updated attendance file
-        generateAttendanceFile();
-    } else {
-        message.style.color = "red";
-        message.textContent = "Incorrect username or password!";
-        timestampDiv.textContent = "";
+        welcomeText.textContent="Welcome, "+u;
+        showAttendance();
+        message.textContent="";
+        passwordInput.value="";
+    }else{
+        message.style.color="red";
+        message.textContent="Wrong username or password";
         beep.play();
     }
-});
+};
 
-// Date format
-function formatDate(date) {
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const yyyy = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, "0");
-    const min = String(date.getMinutes()).padStart(2, "0");
-    const ss = String(date.getSeconds()).padStart(2, "0");
+/* SWITCH LOGIN / REGISTER */
+switchBtn.onclick = ()=>{
+    toggleMode(!registerMode);
+};
 
-    return `${mm}/${dd}/${yyyy} ${hh}:${min}:${ss}`;
+function toggleMode(state){
+    registerMode = state;
+    formTitle.textContent = state ? "Register" : "Login";
+    submitBtn.textContent = state ? "Register" : "Log In";
+    switchBtn.textContent = state ? "Back to Login" : "Register";
+    message.textContent="";
 }
 
-// Generate attendance file (ALL LOGINS)
-function generateAttendanceFile() {
-    let data = "Attendance Summary\n";
-    data += "------------------\n";
-
-    attendanceList.forEach((record, index) => {
-        data += `${index + 1}. Username: ${record.user}\n`;
-        data += `   Time: ${record.time}\n\n`;
+/* ATTENDANCE DISPLAY */
+function showAttendance(){
+    attendanceList.innerHTML="";
+    attendance.forEach((a,i)=>{
+        attendanceList.innerHTML += `
+        <div class="attendance-item">
+        ${i+1}. <b>${a.u}</b><br>${a.time}
+        </div>`;
     });
-
-    const blob = new Blob([data], { type: "text/plain" });
-    const link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-    link.download = "attendance_summary.txt";
-    link.click();
 }
+
+/* CLEAR */
+clearAttendanceBtn.onclick = ()=>{
+    if(confirm("Clear attendance?")){
+        attendance=[];
+        localStorage.removeItem("attendance");
+        attendanceList.innerHTML="";
+    }
+};
+
+/* BACK */
+backBtn.onclick = ()=>{
+    attendanceBox.style.display="none";
+    loginBox.style.display="block";
+    document.body.classList.replace("attendance-bg","login-bg");
+};
+
+/* FORGOT */
+forgotBtn.onclick = ()=>{
+    alert("Contact admin to reset password.");
+};

@@ -1,51 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>NIGGA,S IN THE HOOD</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            border: 1px solid #ccc;
-            padding: 20px;
-        }
-        input, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-        }
-        #message {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        #timestamp {
-            margin-top: 10px;
-            color: green;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Prelim Lab Work 2</title>
+
+<style>
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial, sans-serif;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+    transition:background-image .5s ease;
+}
+
+/* BACKGROUNDS */
+body.login-bg{
+    background-image:
+    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
+    url("login-bg.jpg");
+}
+body.attendance-bg{
+    background-image:
+    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
+    url("attendance-bg.jpg");
+}
+
+.box{
+    width:420px;
+    margin:80px auto;
+    padding:30px;
+    background:rgba(255,255,255,.95);
+    border-radius:15px;
+    box-shadow:0 15px 35px rgba(0,0,0,.4);
+}
+
+h2,h3{text-align:center}
+
+label{margin-top:15px;display:block;font-weight:bold}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.password-box{position:relative}
+.password-box span{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:20px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:#007bff;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{background:#0056b3}
+
+#attendanceBox{display:none}
+
+.attendance-item{
+    margin-top:10px;
+    padding:12px;
+    background:#f5f5f5;
+    border-left:6px solid #007bff;
+    border-radius:8px;
+}
+
+#message{text-align:center;margin-top:10px;font-weight:bold}
+</style>
 </head>
-<body>
 
-<div class="container">
-    <h2>Login System</h2>
+<body class="login-bg">
 
-    <form id="loginForm">
-        <label>Username</label>
-        <input type="text" id="username" required>
+<!-- LOGIN / REGISTER -->
+<div class="box" id="loginBox">
+<h2 id="formTitle">Login</h2>
 
-        <label>Password</label>
-        <input type="password" id="password" required>
+<form id="loginForm">
+<label>Username</label>
+<input type="text" id="username" required>
 
-        <button type="submit">Log In</button>
-    </form>
+<label>Password</label>
+<div class="password-box">
+<input type="password" id="password" required>
+<span id="togglePassword">👁</span>
+</div>
 
-    <div id="message"></div>
-    <div id="timestamp"></div>
+<button type="submit" id="submitBtn">Log In</button>
+</form>
+
+<button id="switchBtn">Register</button>
+<button id="forgotBtn">Forgot Password</button>
+
+<p id="message"></p>
+</div>
+
+<!-- ATTENDANCE -->
+<div class="box" id="attendanceBox">
+<h2 id="welcomeText"></h2>
+<h3>Attendance</h3>
+
+<div id="attendanceList"></div>
+
+<button id="clearAttendanceBtn">Clear Attendance</button>
+<button id="backBtn">Back to Login</button>
 </div>
 
 <script src="script.js"></script>
