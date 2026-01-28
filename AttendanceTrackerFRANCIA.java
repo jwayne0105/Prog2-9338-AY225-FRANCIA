@@ -1,9 +1,9 @@
-
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -16,95 +16,93 @@ public class AttendanceTrackerFRANCIA {
         SwingUtilities.invokeLater(() -> new AttendanceTrackerFRANCIA().start());
     }
 
-    // instance variables
-    private JTextField nameField, courseField, timeInField, timeOutField, signatureIdField;
+    private JTextField nameField, courseField, timeInField, signatureIdField;
     private SignaturePanel signaturePanel;
     private DefaultTableModel model;
 
     private void start() {
         JFrame frame = new JFrame("Attendance Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1200, 450);
+        frame.setSize(1200, 420);
         frame.setLayout(new BorderLayout());
 
-        // COLORS
-        Color bgColor = new Color(245, 245, 245);
-        Color headerColor = new Color(40, 120, 200);
+        Color bgColor = new Color(30, 30, 45);
+        Color panelColor = new Color(45, 45, 70);
+        Color accent = new Color(90, 160, 255);
 
-        // INPUT PANEL
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2, 10, 10));
-        inputPanel.setBorder(BorderFactory.createTitledBorder("Attendance Input"));
-        inputPanel.setBackground(bgColor);
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        inputPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(accent), "Attendance Input"));
+        inputPanel.setBackground(panelColor);
 
         nameField = new JTextField();
         courseField = new JTextField();
         timeInField = new JTextField();
-        timeOutField = new JTextField();
         signatureIdField = new JTextField();
 
         timeInField.setEditable(false);
-        timeOutField.setEditable(false);
         signatureIdField.setEditable(false);
 
-        inputPanel.add(new JLabel("Attendance Name:"));
+        styleField(nameField);
+        styleField(courseField);
+        styleField(timeInField);
+        styleField(signatureIdField);
+
+        inputPanel.add(label("Attendance Name"));
         inputPanel.add(nameField);
-        inputPanel.add(new JLabel("Course / Year:"));
+        inputPanel.add(label("Course / Year"));
         inputPanel.add(courseField);
-        inputPanel.add(new JLabel("Time In:"));
+        inputPanel.add(label("Time In"));
         inputPanel.add(timeInField);
-        inputPanel.add(new JLabel("Time Out:"));
-        inputPanel.add(timeOutField);
-        inputPanel.add(new JLabel("E-Signature ID:"));
+        inputPanel.add(label("E-Signature ID"));
         inputPanel.add(signatureIdField);
 
-        JButton addBtn = new JButton("Add Attendance");
-        addBtn.setBackground(headerColor);
+        JButton addBtn = new JButton("ADD ATTENDANCE");
+        addBtn.setBackground(accent);
         addBtn.setForeground(Color.WHITE);
-        inputPanel.add(new JLabel(""));
+        addBtn.setFocusPainted(false);
+        addBtn.setBorder(BorderFactory.createRaisedBevelBorder());
+
+        inputPanel.add(new JLabel());
         inputPanel.add(addBtn);
 
-        // SIGNATURE PANEL
         signaturePanel = new SignaturePanel();
-        signaturePanel.setBorder(BorderFactory.createTitledBorder("Draw Your Signature"));
+        signaturePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(accent), "Signature"));
 
-        // TABLE
-        String[] columns = {"Name", "Course/Year", "Time In", "Time Out", "Signature"};
+        String[] columns = {"Name", "Course/Year", "Time In", "Signature"};
         model = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable table = new JTable(model);
-        table.setRowHeight(25);
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Attendance List"));
 
-        // TIME FORMAT
+        JTable table = new JTable(model);
+        table.setRowHeight(28);
+        table.setBackground(new Color(35, 35, 55));
+        table.setForeground(Color.WHITE);
+        table.setGridColor(accent);
+        table.getTableHeader().setBackground(accent);
+        table.getTableHeader().setForeground(Color.WHITE);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(accent), "Attendance List"));
+
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
 
-        // AUTO TIME IN
         DocumentListener timeInListener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                setTimeIn(timeFormat);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-            }
+            public void insertUpdate(DocumentEvent e) { setTimeIn(timeFormat); }
+            public void removeUpdate(DocumentEvent e) {}
+            public void changedUpdate(DocumentEvent e) {}
         };
+
         nameField.getDocument().addDocumentListener(timeInListener);
         courseField.getDocument().addDocumentListener(timeInListener);
 
         addBtn.addActionListener(e -> addAttendance(timeFormat));
 
-        // LAYOUT
         JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(bgColor);
         leftPanel.add(inputPanel, BorderLayout.NORTH);
         leftPanel.add(signaturePanel, BorderLayout.CENTER);
 
+        frame.getContentPane().setBackground(bgColor);
         frame.add(leftPanel, BorderLayout.WEST);
         frame.add(scrollPane, BorderLayout.CENTER);
 
@@ -112,57 +110,74 @@ public class AttendanceTrackerFRANCIA {
         frame.setVisible(true);
     }
 
-    private void setTimeIn(DateTimeFormatter timeFormat) {
-        if (!nameField.getText().isEmpty() && !courseField.getText().isEmpty() && timeInField.getText().isEmpty()) {
-            timeInField.setText(LocalDateTime.now().format(timeFormat));
+    private JLabel label(String text) {
+        JLabel l = new JLabel(text);
+        l.setForeground(Color.WHITE);
+        return l;
+    }
+
+    private void styleField(JTextField f) {
+        f.setBackground(new Color(60, 60, 90));
+        f.setForeground(Color.WHITE);
+        f.setBorder(BorderFactory.createLoweredBevelBorder());
+    }
+
+    private void setTimeIn(DateTimeFormatter tf) {
+        if (!nameField.getText().isEmpty() &&
+            !courseField.getText().isEmpty() &&
+            timeInField.getText().isEmpty()) {
+
+            timeInField.setText(LocalDateTime.now().format(tf));
             signatureIdField.setText(generateLetterSignature());
         }
     }
 
-    private void addAttendance(DateTimeFormatter timeFormat) {
-        if (nameField.getText().isEmpty() || courseField.getText().isEmpty() || timeInField.getText().isEmpty()) {
+    private void addAttendance(DateTimeFormatter tf) {
+
+        if (!Pattern.matches("^[A-Z]{2,5}[- ]?[0-9]$", courseField.getText().toUpperCase())) {
+            JOptionPane.showMessageDialog(null,
+                    "Invalid Course / Year format\nExample: BSIT-1 , BSCS 2");
+            return;
+        }
+
+        if (nameField.getText().isEmpty() || timeInField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Complete all required fields!");
             return;
         }
 
-        timeOutField.setText(LocalDateTime.now().format(timeFormat));
-        String signatureStatus = signaturePanel.hasSignature() ? "SIGNED" : "NO SIGNATURE";
+        String sig = signaturePanel.hasSignature() ? "SIGNED" : "NO SIGNATURE";
 
         model.addRow(new Object[]{
-            nameField.getText(),
-            courseField.getText(),
-            timeInField.getText(),
-            timeOutField.getText(),
-            signatureStatus
+                nameField.getText(),
+                courseField.getText().toUpperCase(),
+                timeInField.getText(),
+                sig
         });
 
         nameField.setText("");
         courseField.setText("");
         timeInField.setText("");
-        timeOutField.setText("");
         signatureIdField.setText("");
         signaturePanel.clear();
     }
 
     private String generateLetterSignature() {
         String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        Random rand = new Random();
+        Random r = new Random();
         StringBuilder sb = new StringBuilder("SIG-");
-        for (int i = 0; i < 6; i++) {
-            sb.append(letters.charAt(rand.nextInt(letters.length())));
-        }
+        for (int i = 0; i < 6; i++)
+            sb.append(letters.charAt(r.nextInt(letters.length())));
         return sb.toString();
     }
 }
 
-// SIGNATURE PANEL
 @SuppressWarnings("serial")
 class SignaturePanel extends JPanel {
 
     private Image image;
     private Graphics2D g2;
     private int x, y;
-    private boolean signed = false;
+    private boolean signed;
 
     public SignaturePanel() {
         setPreferredSize(new Dimension(350, 150));
@@ -192,28 +207,20 @@ class SignaturePanel extends JPanel {
         super.paintComponent(g);
         if (image == null) {
             image = createImage(getWidth(), getHeight());
-            if (image != null) {
-                g2 = (Graphics2D) image.getGraphics();
-                g2.setStroke(new BasicStroke(2));
-                g2.setColor(Color.BLACK);
-            }
+            g2 = (Graphics2D) image.getGraphics();
+            g2.setStroke(new BasicStroke(2));
+            g2.setColor(Color.BLACK);
         }
-        if (image != null) {
-            g.drawImage(image, 0, 0, null);
-        }
+        g.drawImage(image, 0, 0, null);
     }
 
-    public boolean hasSignature() {
-        return signed;
-    }
+    public boolean hasSignature() { return signed; }
 
     public void clear() {
-        if (g2 != null) {
-            g2.setPaint(Color.WHITE);
-            g2.fillRect(0, 0, getWidth(), getHeight());
-            g2.setPaint(Color.BLACK);
-            signed = false;
-            repaint();
-        }
+        g2.setPaint(Color.WHITE);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setPaint(Color.BLACK);
+        signed = false;
+        repaint();
     }
 }
