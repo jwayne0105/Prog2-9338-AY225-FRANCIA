@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 50px;
+            width: 90%; max-width: 1000px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); /* 3D Shadow Effect */
+            transform: translateY(0px);
+        }
+        h1 { color: #4834d4; text-align: center; font-weight: 700; margin-bottom: 30px; }
+        .input-box {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 30px;
+        }
+        input {
+            padding: 15px; border: 2px solid #edeff2; border-radius: 10px;
+            outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: #667eea; box-shadow: 0 0 10px rgba(102,126,234,0.2); }
+        .btn-add {
+            background: #4834d4; color: white; border: none;
+            padding: 15px; border-radius: 10px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(72,52,212,0.4);
+        }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(72,52,212,0.6); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #95afc0; padding: 15px; border-bottom: 2px solid #f0f2f5; }
+        td { padding: 15px; border-bottom: 1px solid #f0f2f5; color: #2d3436; font-weight: 500; }
+        .btn-delete {
+            background: #eb4d4b; color: white; border: none;
+            padding: 8px 15px; border-radius: 8px; cursor: pointer;
+        }
+        footer { color: white; margin-top: auto; padding: 20px; font-weight: 300; }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h1>Student Management System</h1>
+        <div class="input-box">
+            <input type="text" id="stuID" placeholder="Student ID">
+            <input type="text" id="stuName" placeholder="Full Name">
+            <input type="text" id="stuGrade" placeholder="Final Grade">
+            <button class="btn-add" onclick="addRecord()">Add Record</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Number</th>
+                    <th>Student Name</th>
+                    <th>Grade</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <footer>
+        Programmer: [Your Name] | ID: [Your ID] | Status: Online
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
